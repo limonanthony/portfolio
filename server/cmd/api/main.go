@@ -3,14 +3,18 @@ package main
 import (
 	"net/http"
 
+	"github.com/limonanthony/portfolio/internal/env"
 	"github.com/limonanthony/portfolio/internal/logger"
 	"github.com/limonanthony/portfolio/internal/server"
 )
 
 func main() {
+	env.Load()
+
 	logger.Info("Starting API server...")
 
-	srv := server.NewServer()
+	serverConfig := server.NewConfig()
+	srv := server.NewServer(serverConfig)
 
 	srv.Router.Use(logger.LoggingMiddleware)
 
@@ -21,7 +25,7 @@ func main() {
 		}
 	})
 
-	logger.Info("Starting API server on port 8080...")
+	logger.Infof("Starting API server on port %d...", serverConfig.Port)
 
 	if err := srv.Start(); err != nil {
 		logger.Panicf("Failed to start API server: %v", err)
