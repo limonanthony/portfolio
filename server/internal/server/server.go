@@ -16,13 +16,13 @@ type Server struct {
 	http   *http.Server
 }
 
-func NewServer() Server {
+func NewServer(cfg *Config) Server {
 	r := router.NewRouter()
 
 	return Server{
 		Router: r,
 		http: &http.Server{
-			Addr:         ":8080",
+			Addr:         cfg.Address(),
 			Handler:      r,
 			ReadTimeout:  serverReadTimeout,
 			WriteTimeout: serverWriteTimeout,
