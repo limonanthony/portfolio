@@ -57,11 +57,14 @@ func Infof(format string, args ...any)    { l.printf(LevelInfo, format, args...)
 func Successf(format string, args ...any) { l.printf(LevelSuccess, format, args...) }
 func Warnf(format string, args ...any)    { l.printf(LevelWarn, format, args...) }
 func Errorf(format string, args ...any)   { l.printf(LevelError, format, args...) }
-func Panicf(format string, args ...any)   { l.printf(LevelPanic, format, args...); os.Exit(1) }
+func Panicf(format string, args ...any) {
+	l.printf(LevelPanic, format, args...)
+	panic(fmt.Sprintf(format, args...))
+}
 
 func Debug(msg string)   { l.print(LevelDebug, msg) }
 func Info(msg string)    { l.print(LevelInfo, msg) }
 func Success(msg string) { l.print(LevelSuccess, msg) }
 func Warn(msg string)    { l.print(LevelWarn, msg) }
 func Error(msg string)   { l.print(LevelError, msg) }
-func Panic(msg string)   { l.print(LevelPanic, msg); os.Exit(1) }
+func Panic(msg string)   { l.print(LevelPanic, msg); panic(msg) }

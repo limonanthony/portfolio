@@ -10,16 +10,15 @@ func TestHashingService(t *testing.T) {
 	service := hashing.NewService()
 
 	t.Run("Hash method", func(t *testing.T) {
-
 		t.Run("should not return the same string", func(t *testing.T) {
 			input := "test"
 			hashed, err := service.Hash(input)
 			if err != nil {
-				t.Fail()
+				t.Errorf("Hash failed: %v", err)
 			}
 
 			if hashed == input {
-				t.Fail()
+				t.Errorf("Hash should not equal input: %s", input)
 			}
 		})
 
@@ -27,11 +26,11 @@ func TestHashingService(t *testing.T) {
 			input := "test"
 			hashed, err := service.Hash(input)
 			if err != nil {
-				t.Fail()
+				t.Errorf("Hash failed: %v", err)
 			}
 
 			if hashed == "" {
-				t.Fail()
+				t.Error("Hash should not be empty")
 			}
 		})
 
@@ -40,7 +39,7 @@ func TestHashingService(t *testing.T) {
 			_, err := service.Hash(input)
 
 			if err != nil {
-				t.Fail()
+				t.Errorf("Hash failed for long password: %v", err)
 			}
 		})
 	})
@@ -50,13 +49,13 @@ func TestHashingService(t *testing.T) {
 		hashed, err := service.Hash(input)
 
 		if err != nil {
-			t.Fail()
+			t.Errorf("Hash failed: %v", err)
 		}
 
 		t.Run("should return true when", func(t *testing.T) {
 			t.Run("input is the same as hashed", func(t *testing.T) {
 				if service.Verify(input, hashed) == false {
-					t.Fail()
+					t.Error("Verify should return true for correct input")
 				}
 			})
 		})
@@ -64,13 +63,13 @@ func TestHashingService(t *testing.T) {
 		t.Run("should return false when", func(t *testing.T) {
 			t.Run("input is not the same as hashed", func(t *testing.T) {
 				if service.Verify("test2", hashed) == true {
-					t.Fail()
+					t.Error("Verify should return false for incorrect input")
 				}
 			})
 
 			t.Run("input is empty", func(t *testing.T) {
 				if service.Verify("", hashed) == true {
-					t.Fail()
+					t.Error("Verify should return false for empty input")
 				}
 			})
 		})
