@@ -2,78 +2,89 @@ package errordefs
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 )
 
-type StatusError interface {
-	error
-	StatusCode() int
-}
-
 type AppError struct {
-	code    int
-	message string
-	err     error
+	code int
+	msg  string
 }
 
-func (e *AppError) Error() string {
-	if e.err != nil {
-		return e.message + ": " + e.err.Error()
-	}
-	return e.message
+func (e AppError) Error() string {
+	return fmt.Sprintf("%d: %s", e.code, e.msg)
 }
 
-func (e *AppError) StatusCode() int {
+func (e AppError) StatusCode() int {
 	return e.code
 }
 
-func (e *AppError) Unwrap() error {
-	return e.err
+func (e AppError) Message() string {
+	return e.msg
 }
 
-func (e *AppError) Is(target error) bool {
-	var t *AppError
-	ok := errors.As(target, &t)
-	if !ok {
-		return false
-	}
-
-	return e.StatusCode() == t.StatusCode()
+func NewError(msg string, code int) AppError {
+	return AppError{code: code, msg: msg}
 }
 
-func NewAppError(msg string, code int, err error) *AppError {
-	return &AppError{code: code, message: msg, err: err}
+func Error(code int, msg string) AppError {
+	return AppError{code: code, msg: msg}
 }
 
-func NewConflict(msg string, err error) *AppError {
-	return NewAppError(msg, http.StatusConflict, err)
+func Errorf(code int, format string, args ...interface{}) AppError {
+	return AppError{code: code, msg: fmt.Sprintf(format, args...)}
 }
 
-func NewNotFound(msg string, err error) *AppError {
-	return NewAppError(msg, http.StatusNotFound, err)
+func Forbidden(msg string) AppError {
+	return Error(http.StatusForbidden, msg)
 }
 
-func NewBadRequest(msg string, err error) *AppError {
-	return NewAppError(msg, http.StatusBadRequest, err)
+func Forbiddenf(format string, args ...interface{}) AppError {
+	return Errorf(http.StatusForbidden, format, args...)
 }
 
-func NewUnauthorized(msg string, err error) *AppError {
-	return NewAppError(msg, http.StatusUnauthorized, err)
+func NotFound(msg string) AppError {
+	return Error(http.StatusNotFound, msg)
 }
 
-func NewForbidden(msg string, err error) *AppError {
-	return NewAppError(msg, http.StatusForbidden, err)
+func NotFoundf(format string, args ...interface{}) AppError {
+	return Errorf(http.StatusNotFound, format, args...)
 }
 
-func NewInternalServerError(msg string, err error) *AppError {
-	return NewAppError(msg, http.StatusInternalServerError, err)
+func Unauthorized(msg string) AppError {
+	return Error(http.StatusUnauthorized, msg)
 }
 
-var (
-	ErrConflict            = NewConflict("conflict", nil)
-	ErrNotFound            = NewNotFound("not found", nil)
-	ErrBadRequest          = NewBadRequest("bad request", nil)
-	ErrUnauthorized        = NewUnauthorized("unauthorized", nil)
-	ErrForbidden           = NewForbidden("forbidden", nil)
-	ErrInternalServerError = NewInternalServerError("internal server error", nil)
-)
+func Unauthorizedf(format string, args ...interface{}) AppError {
+	return Errorf(http.StatusUnauthorized, format, args...)
+}
+
+func BadRequest(msg string) AppError {
+	return Error(http.StatusBadRequest, msg)
+}
+
+func BadRequestf(format string, args ...interface{}) AppError {
+	return Errorf(http.StatusBadRequest, format, args...)
+}
+
+func Conflict(msg string) AppError {
+	return Error(http.StatusConflict, msg)
+}
+
+func Conflictf(format string, args ...interface{}) AppError {
+	return Errorf(http.StatusConflict, format, args...)
+}
+
+func Internal(msg string) AppError {
+	return Error(http.StatusInternalServerError, msg)
+}
+
+func Internalf(format string, args ...interface{}) AppError {
+	return Errorf(http.StatusInternalServerError, format, args...)
+}
+
+func IsAppError(err error) (AppError, bool) {
+	var appErr AppError
+	ok := errors.As(err, &appErr)
+	return appErr, ok
+}

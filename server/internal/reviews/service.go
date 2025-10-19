@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/limonanthony/portfolio/internal/common"
+	"github.com/limonanthony/portfolio/internal/logger"
 )
 
 type Service interface {
@@ -20,10 +21,13 @@ type service struct {
 }
 
 func (s service) Create(ctx context.Context, dto CreationDto) (common.Id, error) {
+	logger.SetLevel(logger.LevelDebug)
+	logger.Debugf("dto.Email: %v", dto.Email)
 	if dto.Email != nil {
 		_, err := s.repository.GetByEmail(ctx, *dto.Email)
 		if err == nil {
-			return 0, ErrEmailConflict
+			logger.Debugf("duplicate email: %v", *dto.Email)
+			return 0, EmailConflictErr(*dto.Email)
 		}
 	}
 
@@ -40,7 +44,7 @@ func (s service) Create(ctx context.Context, dto CreationDto) (common.Id, error)
 		Name:    name,
 		Message: dto.Message,
 		Rating:  dto.Rating,
-		Visible: false,
+		Visible: true,
 	}
 
 	return s.repository.Create(ctx, review)

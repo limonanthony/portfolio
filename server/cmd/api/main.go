@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/limonanthony/portfolio/internal/database"
 	"github.com/limonanthony/portfolio/internal/database/migrations"
 	"github.com/limonanthony/portfolio/internal/env"
@@ -34,17 +32,12 @@ func main() {
 	newServer := server.NewServer(serverConfig)
 	mainRouter := newServer.Router()
 
-	mainRouter.Use(logger.LoggingMiddleware, database.Middleware(db))
+	mainRouter.Use(logger.LoggingMiddleware, database.TransactionMiddleware(db))
 
 	infos.RegisterRoutes(mainRouter)
 	reviews.RegisterRoutes(mainRouter)
 
-	scheme := "http"
-	if serverConfig.Secure {
-		scheme = "https"
-	}
-	url := fmt.Sprintf("%s://%s:%d", scheme, serverConfig.Host, serverConfig.Port)
-	logger.Infof("Starting API server at %s ...", url)
+	logger.Infof("Starting API server on port %d...", serverConfig.Port)
 
 	if err := newServer.Start(); err != nil {
 		logger.Panicf("Failed to start API server: %v", err)

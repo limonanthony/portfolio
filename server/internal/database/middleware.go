@@ -3,58 +3,40 @@ package database
 import (
 	"context"
 	"net/http"
-
-	"gorm.io/gorm"
+	"time"
 )
 
 const ContextKey = "database"
 
-func Middleware(db *Database) func(http.Handler) http.Handler {
+func TransactionMiddleware(db *Database) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			r = r.WithContext(context.WithValue(r.Context(), ContextKey, db.Db()))
-			next.ServeHTTP(w, r)
+			ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+			defer cancel()
+
+			gorm := db.Db()
+			tx := gorm.WithContext(ctx).Begin()
+			defer func() {
+				if rec := recover(); rec != nil {
+					tx.Rollback()
+					panic(rec)
+				}
+			}()
+
+			r = r.WithContext(context.WithValue(ctx, ContextKey, tx))
+			rr := &statusRecorder{ResponseWriter: w}
+			next.ServeHTTP(rr, r)
+
+			if rr.status >= 400 {
+				tx.Rollback()
+				return
+			}
+
+			if err := tx.Commit().Error; err != nil {
+				http.Error(w, "transaction commit failed", http.StatusInternalServerError)
+			}
 		})
 	}
-}
-
-func TransactionMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		dbVal := r.Context().Value(ContextKey)
-		if dbVal == nil {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		gormDB, ok := dbVal.(*gorm.DB)
-		if !ok {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		ctx := r.Context()
-		tx := gormDB.WithContext(ctx).Begin()
-
-		defer func() {
-			if rec := recover(); rec != nil {
-				tx.Rollback()
-				panic(rec)
-			}
-		}()
-
-		r = r.WithContext(context.WithValue(ctx, ContextKey, tx))
-		rr := &statusRecorder{ResponseWriter: w}
-		next.ServeHTTP(rr, r)
-
-		if rr.status >= 400 {
-			tx.Rollback()
-			return
-		}
-
-		if err := tx.Commit().Error; err != nil {
-			http.Error(w, "transaction commit failed", http.StatusInternalServerError)
-		}
-	})
 }
 
 type statusRecorder struct {

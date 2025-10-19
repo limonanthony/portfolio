@@ -1,5 +1,5 @@
 package reviews
 
-type creationRequest struct {
+type creatioRequest struct {
 	Body CreationDto `required:"true"`
 }

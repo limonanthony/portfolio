@@ -83,7 +83,7 @@ func (r repository) DeleteById(ctx context.Context, id common.Id) error {
 	}
 
 	if amount == 0 {
-		return ErrNotFound
+		return NotFoundErr(id)
 	}
 
 	return nil
