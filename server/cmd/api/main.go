@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/limonanthony/portfolio/internal/database"
 	"github.com/limonanthony/portfolio/internal/database/migrations"
 	"github.com/limonanthony/portfolio/internal/env"
@@ -37,7 +39,12 @@ func main() {
 	infos.RegisterRoutes(mainRouter)
 	reviews.RegisterRoutes(mainRouter)
 
-	logger.Infof("Starting API server on port %d...", serverConfig.Port)
+	scheme := "http"
+	if serverConfig.Secure {
+		scheme = "https"
+	}
+	url := fmt.Sprintf("%s://%s:%d", scheme, serverConfig.Host, serverConfig.Port)
+	logger.Infof("Starting API server at %s ...", url)
 
 	if err := newServer.Start(); err != nil {
 		logger.Panicf("Failed to start API server: %v", err)
