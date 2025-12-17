@@ -1,6 +1,7 @@
 package errordefs
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -11,8 +12,9 @@ func ToHttpError(err error) error {
 		return nil
 	}
 
-	if appErr, ok := IsAppError(err); ok {
-		return huma.NewError(appErr.StatusCode(), appErr.Message())
+	var statusErr StatusError
+	if errors.As(err, &statusErr) {
+		return huma.NewError(statusErr.StatusCode(), err.Error())
 	}
 
 	return huma.NewError(http.StatusInternalServerError, err.Error())

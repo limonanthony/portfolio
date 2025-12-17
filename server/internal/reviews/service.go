@@ -23,7 +23,7 @@ func (s service) Create(ctx context.Context, dto CreationDto) (common.Id, error)
 	if dto.Email != nil {
 		_, err := s.repository.GetByEmail(ctx, *dto.Email)
 		if err == nil {
-			return 0, EmailConflictErr(*dto.Email)
+			return 0, ErrEmailConflict
 		}
 	}
 
@@ -40,7 +40,7 @@ func (s service) Create(ctx context.Context, dto CreationDto) (common.Id, error)
 		Name:    name,
 		Message: dto.Message,
 		Rating:  dto.Rating,
-		Visible: true,
+		Visible: false,
 	}
 
 	return s.repository.Create(ctx, review)

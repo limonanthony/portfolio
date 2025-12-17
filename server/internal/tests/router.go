@@ -89,7 +89,7 @@ func NewRouterWithDb(t *testing.T) (*router.Router, humatest.TestAPI) {
 	}
 
 	router_ := router.NewRouter(nil)
-	router_.Use(database.TransactionMiddleware(db))
+	router_.Use(database.Middleware(db))
 
 	_, baseAPI := humatest.New(t)
 

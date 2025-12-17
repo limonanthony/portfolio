@@ -77,7 +77,6 @@ func TestCreateReviewRoute(t *testing.T) {
 		testRouter, testApi := tests.NewRouterWithDb(t)
 		reviews.RegisterRoutes(testRouter)
 
-		// Create first review
 		testApi.Post("/reviews", map[string]any{
 			"email":   "joe@mail.com",
 			"rating":  5,
@@ -85,7 +84,6 @@ func TestCreateReviewRoute(t *testing.T) {
 			"name":    "Joe",
 		})
 
-		// Try to create another with the same email
 		resp := testApi.Post("/reviews", map[string]any{
 			"email":   "joe@mail.com",
 			"rating":  4,
