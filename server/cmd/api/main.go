@@ -32,7 +32,7 @@ func main() {
 	newServer := server.NewServer(serverConfig)
 	mainRouter := newServer.Router()
 
-	mainRouter.Use(logger.LoggingMiddleware, database.TransactionMiddleware(db))
+	mainRouter.Use(logger.LoggingMiddleware, database.Middleware(db))
 
 	infos.RegisterRoutes(mainRouter)
 	reviews.RegisterRoutes(mainRouter)
