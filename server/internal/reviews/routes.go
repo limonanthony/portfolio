@@ -2,7 +2,6 @@ package reviews
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/limonanthony/portfolio/internal/database"
@@ -37,9 +36,6 @@ func createReview(service Service) func(ctx context.Context, i *creationRequest)
 	return func(ctx context.Context, i *creationRequest) (*createReviewResponse, error) {
 		res, err := service.Create(ctx, i.Body)
 		if err != nil {
-			if errors.Is(err, ErrEmailConflict) {
-				return nil, errordefs.BadRequest("Invalid request parameters")
-			}
 			return nil, errordefs.ToHttpError(err)
 		}
 		return &createReviewResponse{Body: res}, nil
