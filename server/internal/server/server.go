@@ -12,15 +12,15 @@ const serverWriteTimeout = 10 * time.Second
 const serverIdleTimeout = 60 * time.Second
 
 type Server struct {
-	Router *router.Router
+	router *router.Router
 	http   *http.Server
 }
 
 func NewServer(cfg *Config) Server {
-	r := router.NewRouter()
+	r := router.NewRouter(nil)
 
 	return Server{
-		Router: r,
+		router: r,
 		http: &http.Server{
 			Addr:         cfg.Address(),
 			Handler:      r,
@@ -33,4 +33,8 @@ func NewServer(cfg *Config) Server {
 
 func (s *Server) Start() error {
 	return s.http.ListenAndServe()
+}
+
+func (s *Server) Router() *router.Router {
+	return s.router
 }
