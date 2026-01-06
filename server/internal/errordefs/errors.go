@@ -1,7 +1,19 @@
 package errordefs
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
+)
+
+var (
+	ErrApp          = errors.New("application error")
+	ErrConflict     = errors.New("conflict")
+	ErrNotFound     = errors.New("not found")
+	ErrBadRequest   = errors.New("bad request")
+	ErrUnauthorized = errors.New("unauthorized")
+	ErrForbidden    = errors.New("forbidden")
+	ErrInternal     = errors.New("internal server error")
 )
 
 type StatusError interface {
@@ -15,56 +27,68 @@ type AppError struct {
 	err  error
 }
 
-type Conflict string
-
-func (e Conflict) Error() string {
-	return string(e)
-}
-func (e Conflict) StatusCode() int {
-	return http.StatusConflict
-}
-
-type NotFound string
-
-func (e NotFound) Error() string {
-	return string(e)
-}
-func (e NotFound) StatusCode() int {
-	return http.StatusNotFound
+func (e *AppError) Error() string {
+	if e.msg != "" {
+		return e.msg
+	}
+	if e.err != nil {
+		return e.err.Error()
+	}
+	return "an unknown error occurred"
 }
 
-type BadRequest string
-
-func (e BadRequest) Error() string {
-	return string(e)
-}
-func (e BadRequest) StatusCode() int {
-	return http.StatusBadRequest
+func (e *AppError) StatusCode() int {
+	return e.code
 }
 
-type Unauthorized string
-
-func (e Unauthorized) Error() string {
-	return string(e)
-}
-func (e Unauthorized) StatusCode() int {
-	return http.StatusUnauthorized
+func (e *AppError) Unwrap() error {
+	return e.err
 }
 
-type Forbidden string
-
-func (e Forbidden) Error() string {
-	return string(e)
+func NewConflict(msg string) *AppError {
+	return &AppError{
+		code: http.StatusConflict,
+		msg:  msg,
+		err:  fmt.Errorf("%w: %w", ErrConflict, ErrApp),
+	}
 }
-func (e Forbidden) StatusCode() int {
-	return http.StatusForbidden
+
+func NewNotFound(msg string) *AppError {
+	return &AppError{
+		code: http.StatusNotFound,
+		msg:  msg,
+		err:  fmt.Errorf("%w: %w", ErrNotFound, ErrApp),
+	}
 }
 
-type InternalServerError string
-
-func (e InternalServerError) Error() string {
-	return string(e)
+func NewBadRequest(msg string) *AppError {
+	return &AppError{
+		code: http.StatusBadRequest,
+		msg:  msg,
+		err:  fmt.Errorf("%w: %w", ErrBadRequest, ErrApp),
+	}
 }
-func (e InternalServerError) StatusCode() int {
-	return http.StatusInternalServerError
+
+func NewUnauthorized(msg string) *AppError {
+	return &AppError{
+		code: http.StatusUnauthorized,
+		msg:  msg,
+		err:  fmt.Errorf("%w: %w", ErrUnauthorized, ErrApp),
+	}
+}
+
+func NewForbidden(msg string) *AppError {
+	return &AppError{
+		code: http.StatusForbidden,
+		msg:  msg,
+		err:  fmt.Errorf("%w: %w", ErrForbidden, ErrApp),
+	}
+}
+
+func NewInternal(msg string) *AppError {
+	return &AppError{
+		code: http.StatusInternalServerError,
+		msg:  msg,
+		err:  fmt.Errorf("%w: %w", ErrInternal, ErrApp),
+	}
 }

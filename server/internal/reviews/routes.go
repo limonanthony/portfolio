@@ -38,7 +38,7 @@ func createReview(service Service) func(ctx context.Context, i *creationRequest)
 		res, err := service.Create(ctx, i.Body)
 		if err != nil {
 			if errors.Is(err, ErrEmailConflict) {
-				return nil, errordefs.BadRequest("Invalid request parameters")
+				return nil, errordefs.NewBadRequest("Invalid request parameters")
 			}
 			return nil, errordefs.ToHttpError(err)
 		}

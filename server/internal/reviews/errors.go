@@ -1,8 +1,8 @@
 package reviews
 
-import "github.com/limonanthony/portfolio/internal/errordefs"
+import "errors"
 
-const (
-	ErrEmailConflict errordefs.Conflict = "email conflict"
-	ErrNotFound      errordefs.NotFound = "review not found"
+var (
+	ErrEmailConflict = errors.New("email conflict")
+	ErrNotFound      = errors.New("review not found")
 )
